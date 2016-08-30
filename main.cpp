@@ -25,8 +25,9 @@
 #include <iostream>
 
 int main( int argc, char ** argv ) {
-	daw::spreadsheet::impl::cell_value_number blah{ daw::nodepp::base::create_event_emitter(), "A1", 10 };
-	blah.value( ) /= 3;
+	using daw::spreadsheet::impl::cell_value;
+	using namespace daw::nodepp::base;
+	cell_value blah{ create_event_emitter( ), cell_value::expected_value_t::General, "3" };
 	std::cout << blah.encode() << "\n";
 	return EXIT_SUCCESS;
 }

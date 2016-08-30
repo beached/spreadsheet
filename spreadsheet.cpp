@@ -27,25 +27,22 @@
 namespace daw {
 	namespace spreadsheet {
 		void cell_t::link_values( ) {
-
+			link_object( "value", *m_value );
 		}
 
-		cell_t::cell_t( ):
+		cell_t::cell_t( daw::nodepp::base::EventEmitter emitter ):
 				daw::json::JsonLink<cell_t>{ },
-				m_value{ nullptr } {
+				m_value{ std::make_unique<impl::cell_value>( std::move( emitter ) ) } {
 
 			link_values( );
 		}
 
 		cell_t::~cell_t( ) { }
 
-		void cell_t::swap( cell_t & rhs ) noexcept {
-			using std::swap;
-			swap( m_value, rhs.m_value );
-		}
-
 		void swap( cell_t & lhs, cell_t & rhs ) noexcept {
-			lhs.swap( rhs );
+			using std::swap;
+			swap( static_cast<daw::json::JsonLink<cell_t> &>(lhs), static_cast<daw::json::JsonLink<cell_t> &>(lhs) );
+			lhs.m_value.swap( rhs.m_value );
 		}
 	}	// namespace spreadsheet
 }	// namespace daw

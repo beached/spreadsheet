@@ -67,12 +67,14 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/big_num_t.h
 	${HEADER_FOLDER}/impl_cell_value.h
 	${HEADER_FOLDER}/spreadsheet.h
+	${HEADER_FOLDER}/table_item.h
 )
 
 set( SOURCE_FILES
 	big_num_t.cpp
 	impl_cell_value.cpp
 	spreadsheet.cpp
+	table_item.cpp
 )
 
 include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )

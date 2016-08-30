@@ -33,82 +33,84 @@
 #include <daw/daw_variant.h>
 
 #include "big_num_t.h"
+#include "table_item.h"
 
 namespace daw {
 	namespace spreadsheet {
 		namespace impl {
 			class cell_value;
 
-			class column: public daw::json::JsonLink<column> {
+			class column: public table_item {
 				std::vector<cell_value> m_values;
-			};
-			enum class expected_value_t { Text, Number, Timestamp, Time, Boolean };
-
-			using cell_variant_t = daw::variant_t<std::string, daw::spreadsheet::number::big_num_t, boost::posix_time::ptime, bool>;
-
-			std::function<cell_variant_t( )> eval( boost::string_ref cell_value );
-
-			class cell_value: public daw::json::JsonLink<cell_value>, public daw::nodepp::base::StandardEvents<cell_value> {
-				std::string m_id;
-				void link_values( );
 			public:
-				cell_value( daw::nodepp::base::EventEmitter emitter, std::string id );
+				column( daw::nodepp::base::EventEmitter emitter );
+				column( column const & other );
+				column( column && other );
+				column & operator=( column const & rhs );
+				column & operator=( column && rhs );
+				friend void swap( column & lhs, column & rhs );
+			};	// column
+
+			void swap( column & lhs, column & rhs );
+
+			struct cell_value: public table_item {
+				enum class expected_value_t: size_t { General, Text, Number, Timestamp, Time, Boolean };
+				using string_t = std::string;
+				using number_t = daw::spreadsheet::number::big_num_t;
+				using timestamp_t = boost::posix_time::ptime;
+				using bool_t = bool;
+				using cell_variant_t = daw::variant_t<string_t, number_t, timestamp_t, bool_t >;
+				using eval_func_t = std::function<cell_variant_t( )>;
+			private:
+				void link_values( );
+				// State values
+				expected_value_t m_value_type;
+				std::string m_string_value;
+				// Non-state values
+				eval_func_t m_evaluated;
+
+				eval_func_t eval( boost::string_ref cell_value );
+			public:
+				cell_value( );
+
+				cell_value( daw::nodepp::base::EventEmitter emitter, expected_value_t value_type = expected_value_t::General, std::string string_value = "", eval_func_t eval_func = nullptr );
 				virtual ~cell_value( );
-				virtual std::string evaluate( ) const = 0;
-				virtual void set_value( boost::string_ref ) = 0;
-				virtual std::string value_type( ) const = 0;
-				std::string & id( );
-				std::string const & id( ) const;
+				std::string evaluate( );
+				void set_value( boost::string_ref );
 
-				cell_value( cell_value const & ) = default;
-				cell_value( cell_value && ) = default;
-				cell_value & operator=( cell_value const & ) = default;
-				cell_value & operator=( cell_value && ) = default;
+				expected_value_t & value_type( );
+				expected_value_t const & value_type( ) const;
 
+				cell_value( cell_value const & other );
+				cell_value( cell_value && other );
+				cell_value & operator=( cell_value const & rhs );
+				cell_value & operator=( cell_value && rhs );
+
+				friend void swap( cell_value & lhs, cell_value & rhs ) noexcept;
 				///
 				/// \param cb A callback function that takes the string id of the updated cell
 				void on_data_updated( std::function<void( std::string )> cb );
 
+				bool empty( ) const;
+
 				void emit_data_updated( );
 			};	// cell_value
 
-			class cell_value_string: public cell_value {
-				std::string m_value;
-				void link_values( );
-			public:
-				cell_value_string( daw::nodepp::base::EventEmitter emitter, std::string id, std::string value );
-				std::string evaluate( ) const override;
-				void set_value( boost::string_ref value_string ) override;
-				std::string value_type( ) const override;
+			cell_value::expected_value_t expected_value_from_string( boost::string_ref value_type );
+			std::string to_string( cell_value::expected_value_t const & value_type );
+			std::ostream & operator<<( std::ostream & os, cell_value::expected_value_t const & expected_value );
+			std::istream & operator>>( std::istream & os, cell_value::expected_value_t & expected_value );
 
-				cell_value_string( cell_value_string const & ) = default;
-				cell_value_string( cell_value_string && ) = default;
-				cell_value_string & operator=( cell_value_string const & ) = default;
-				cell_value_string & operator=( cell_value_string && ) = default;
-			};	// cell_value_string
-
-			struct cell_value_number: public cell_value {
-				using value_t = daw::spreadsheet::number::big_num_t;
-			private:
-				value_t m_value;
-				void link_values( );
-			public:
-				cell_value_number( daw::nodepp::base::EventEmitter emitter, std::string id, value_t value );
-				std::string evaluate( ) const override;
-				void set_value( boost::string_ref value_number ) override;
-				std::string value_type( ) const override;
-
-				cell_value_number( cell_value_number const & ) = default;
-				cell_value_number( cell_value_number && ) = default;
-				cell_value_number & operator=( cell_value_number const & ) = default;
-				cell_value_number & operator=( cell_value_number && ) = default;
-
-				value_t & value( );
-				value_t const & value( ) const;
-			};	// cell_value_number
-
-			std::string to_string( cell_value_number::value_t const & value );
 		}	// namespace impl
 	}	// namespace spreadsheet
 }	// namespace daw
+
+namespace std {
+	template<>
+	struct hash<daw::spreadsheet::impl::cell_value::expected_value_t> {
+		size_t operator()( daw::spreadsheet::impl::cell_value::expected_value_t const & value ) const noexcept {
+			return static_cast<size_t>( value );
+		}
+	};	// hash
+}
 

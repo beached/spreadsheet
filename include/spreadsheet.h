@@ -24,6 +24,7 @@
 
 #include <memory>
 
+#include <daw/nodepp/base_event_emitter.h>
 #include <daw/json/daw_json_link.h>
 
 #include "impl_cell_value.h"
@@ -37,13 +38,13 @@ namespace daw {
 			void link_values( );
 
 		public:
-			cell_t( );
+			cell_t( daw::nodepp::base::EventEmitter emitter );
 			~cell_t( );
 			cell_t( cell_t const & ) = default;
 			cell_t( cell_t && ) = default;
 			cell_t & operator=( cell_t const & ) = default;
 			cell_t & operator=( cell_t && ) = default;
-			void swap( cell_t & rhs ) noexcept;
+			friend void swap( cell_t & lhs, cell_t & rhs ) noexcept;
 		};
 
 		void swap( cell_t & lhs, cell_t & rhs ) noexcept;
