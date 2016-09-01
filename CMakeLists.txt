@@ -65,6 +65,7 @@ set( HEADER_FOLDER "include" )
 
 set( HEADER_FILES
 	${HEADER_FOLDER}/big_num_t.h
+	${HEADER_FOLDER}/evaluator.h
 	${HEADER_FOLDER}/impl_cell_value.h
 	${HEADER_FOLDER}/spreadsheet.h
 	${HEADER_FOLDER}/table_item.h

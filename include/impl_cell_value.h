@@ -57,9 +57,10 @@ namespace daw {
 				enum class expected_value_t: size_t { General, Text, Number, Timestamp, Time, Boolean };
 				using string_t = std::string;
 				using number_t = daw::spreadsheet::number::big_num_t;
+				using duration_t = boost::posix_time::time_duration;
 				using timestamp_t = boost::posix_time::ptime;
 				using bool_t = bool;
-				using cell_variant_t = daw::variant_t<string_t, number_t, timestamp_t, bool_t >;
+				using cell_variant_t = daw::variant_t<string_t, number_t, timestamp_t, duration_t, bool_t >;
 				using eval_func_t = std::function<cell_variant_t( )>;
 			private:
 				void link_values( );
