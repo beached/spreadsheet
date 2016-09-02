@@ -54,7 +54,7 @@ namespace daw {
 			void swap( column & lhs, column & rhs );
 
 			struct cell_value: public table_item {
-				enum class expected_value_t: size_t { General, Text, Number, Timestamp, Time, Boolean };
+				enum class expected_value_t: size_t { General, Text, Number, Timestamp, Time, Boolean, Error };
 				using string_t = std::string;
 				using number_t = daw::spreadsheet::number::big_num_t;
 				using duration_t = boost::posix_time::time_duration;
