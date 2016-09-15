@@ -23,10 +23,11 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
+#include <unordered_map>
 #include <string>
 #include <utility>
-#include <unordered_map>
 
+#include <daw/daw_hash_table.h>
 #include <daw/json/daw_json_link.h>
 #include <daw/nodepp/base_event_emitter.h>
 
@@ -130,12 +131,13 @@ namespace daw {
 		}
 
 		table_item::table_item_type table_item_type_from_string( boost::string_ref item_type ) {
-			static std::unordered_map<std::string, table_item::table_item_type> const s_items = {
-					{ "Table", table_item::table_item_type::Table },
-					{ "Cell", table_item::table_item_type::Cell },
-					{ "Row", table_item::table_item_type::Row },
-					{ "Column", table_item::table_item_type::Column }
-			};
+			using namespace std::literals::string_literals;
+			static auto const s_items = daw::create_hash_table<std::string, table_item::table_item_type>( {
+					{ "Table"s, table_item::table_item_type::Table },
+					{ "Cell"s, table_item::table_item_type::Cell },
+					{ "Row"s, table_item::table_item_type::Row },
+					{ "Column"s, table_item::table_item_type::Column }
+			} );
 			return s_items.at( item_type.to_string( ) );
 		}
 

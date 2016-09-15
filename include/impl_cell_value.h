@@ -34,6 +34,7 @@
 
 #include "big_num_t.h"
 #include "table_item.h"
+#include "sheetrock.h"
 
 namespace daw {
 	namespace spreadsheet {

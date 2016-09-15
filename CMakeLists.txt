@@ -68,6 +68,7 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/evaluator.h
 	${HEADER_FOLDER}/impl_cell_value.h
 	${HEADER_FOLDER}/spreadsheet.h
+	${HEADER_FOLDER}/sheetrock.h
 	${HEADER_FOLDER}/table_item.h
 )
 
@@ -85,5 +86,5 @@ add_dependencies( spreadsheet header_libraries_prj char_range_prj parse_json_prj
 target_link_libraries( spreadsheet char_range parse_json nodepp ${Boost_LIBRARIES} )
 
 add_executable( spreadsheet_bin main.cpp )
-target_link_libraries( spreadsheet_bin spreadsheet	 ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+target_link_libraries( spreadsheet_bin spreadsheet ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 

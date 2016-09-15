@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <daw/daw_parser_helper.h>
+#include <daw/daw_parser_addons.h>
 #include <unordered_map>
 
 #include "impl_cell_value.h"
@@ -120,7 +121,7 @@ namespace daw {
 
 			template<typename ForwardIterator>
 				cell_value::cell_variant_t to_variant( ForwardIterator first, ForwardIterator last ) {
-					auto result = daw::parser::find_numeric( first, last );
+					auto result = daw::parser::find_number( first, last );
 					if( result ) {
 						auto opt_num = try_numeric( result.first, result.last );
 						assert( opt_num );

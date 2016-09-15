@@ -29,12 +29,10 @@
 #include <daw/daw_parser_helper.h>
 
 #include "impl_cell_value.h"
-#include "../../../.CLion2016.2/system/cmake/generated/spreadsheet-8eb8327/8eb8327/Debug/install/include/daw/daw_parser_helper.h"
-
 
 namespace daw {
 	namespace spreadsheet {
-		using result_t = std::function<daw::variant_t<string_t, number_t, timestamp_t, duration_t, bool_t>( )>;
+		using result_t = std::function<daw::variant_t<daw::spreadsheet::impl::cell_value::string_t, daw::spreadsheet::impl::cell_value::number_t, daw::spreadsheet::impl::cell_value::timestamp_t, daw::spreadsheet::impl::cell_value::duration_t, daw::spreadsheet::impl::cell_value::bool_t>( )>;
 
 		/// @brief Only use for values in lower ASCII range of UTF-8.
 		/// @param first1 Iterattor for the start of first string
