@@ -31,6 +31,7 @@
 
 #include <daw/daw_parser_helper.h>
 #include <daw/daw_optional.h>
+#include <daw/daw_optional_poly.h>
 
 namespace daw {
 	namespace parser {
@@ -56,39 +57,118 @@ namespace daw {
 				struct cell: public ast_item { };
 
 				struct range: public expression {
-					std::unique_ptr<cell> first;
-					std::unique_ptr<cell> last;
+					daw::optional_poly<cell> first;
+					daw::optional_poly<cell> last;
 					virtual ~range( ) = default;
 				};	// range
 
 				struct declaration: public expression {
-					std::unique_ptr<label> name;
-					std::unique_ptr<expression> value;
+					daw::optional_poly<label> name;
+					daw::optional_poly<expression> value;
 				};	// declaration
 
 				struct unary_operator: public expression {
-					std::unique_ptr<expression> lhs;
-					std::unique_ptr<expression> rhs;
+					daw::optional_poly<expression> rhs;
 					virtual ~unary_operator( ) = default;
 				};	// unary_operator
 
 				struct binary_operator: public expression {
-					std::unique_ptr<expression> rhs;
+					daw::optional_poly<expression> lhs;
+					daw::optional_poly<expression> rhs;
 					virtual ~binary_operator( ) = default;
+				protected:
+					template<typename ForwardIterator, typename T>
+					binary_operator( ForwardIterator first, ForwardIterator last, T op ):
+							expression{ },
+							lhs{ },
+							rhs{ } {
+
+						auto rng = daw::parser::split_on( first, last, op );
+						daw::exception::daw_throw_on_false<daw::parser::ParserException>( rng.size( ) == 2, "Expected binary expression" );
+						auto l = parse_expression( rng[0].begin( ), rng[0].end( ) );
+						auto r = parse_expression( rng[1].begin( ), rng[1].end( ) );
+						daw::exception::daw_throw_on_false<daw::parser::ParserException>( l, "Invalid expression on lhs of +" );
+						daw::exception::daw_throw_on_false<daw::parser::ParserException>( r, "Invalid expression on rhs of +" );
+						lhs = *l;
+						rhs = *r;
+					}
+
+					virtual int32_t op_char( ) const = 0;
 				};	// binary_operator
+				namespace impl {
+					template<char op>
+					struct bin_op_derived: public binary_operator {
+						template<typename ForwardIterator>
+						bin_op_derived( ForwardIterator first, ForwardIterator last ):
+								binary_operator{ first, last, op } { }
+
+						template<typename ForwardIterator>
+							static daw::optional_poly<bin_op_derived> create( ForwardIterator first, ForwardIterator last ) {
+								daw::optional_poly<bin_op_derived> result;
+								result = bin_op_derived( first, last );
+								return result;
+							}
+
+						int32_t op_char( ) const override { return static_cast<int32_t>(op); }
+					};    // bin_op_derived
+				}
+
+				using bin_op_addition = impl::bin_op_derived<'+'>;
+				using bin_op_subtraction = impl::bin_op_derived<'-'>;
+				using bin_op_multiplication = impl::bin_op_derived<'*'>;
+				using bin_op_division = impl::bin_op_derived<'/'>;
+				using bin_op_modulus = impl::bin_op_derived<'%'>;
+				using bin_op_power = impl::bin_op_derived<'^'>;
+				using bin_op_and = impl::bin_op_derived<'&'>;
+				using bin_op_or = impl::bin_op_derived<'|'>;
+				using bin_op_less = impl::bin_op_derived<'<'>;
+				using bin_op_greater = impl::bin_op_derived<'>'>;
+				using bin_op_equal = impl::bin_op_derived<'='>;
+
+
+				template<typename ForwardIterator, typename T>
+				daw::optional_poly<binary_operator> get_binary_operator( ForwardIterator first, ForwardIterator last, T op ) {
+					switch( op ) {
+					case '+': return bin_op_addition::create<ForwardIterator>( first, last );
+					case '-': return bin_op_subtraction::create<ForwardIterator>( first, last );
+					case '*': return bin_op_multiplication::create<ForwardIterator>( first, last );
+					case '/': return bin_op_division::create<ForwardIterator>( first, last );
+					case '%': return bin_op_modulus::create<ForwardIterator>( first, last );
+					case '^': return bin_op_power::create<ForwardIterator>( first, last );
+					case '&': return bin_op_and::create<ForwardIterator>( first, last );
+					case '|': return bin_op_or::create<ForwardIterator>( first, last );
+					case '<': return bin_op_less::create<ForwardIterator>( first, last );
+					case '>': return bin_op_greater::create<ForwardIterator>( first, last );
+					case '=': return bin_op_equal::create<ForwardIterator>( first, last );
+					default:
+						return daw::optional_poly<binary_operator>{ };
+					}
+				}
+
+				template<typename T>
+				bool is_binary_operator( T value ) {
+					return is_a( value, '+', '-', '*', '/', '%', '^', '&', '|', '<', '>', '=' );
+				}
+
+				template<typename ForwardIterator>
+				daw::optional_poly<expression> create_binary_operation( ForwardIterator first, ForwardIterator last ) {
+					using value_t = daw::traits::root_type_t<decltype(*first)>;
+					auto lhs = daw::parser::until( first, last, &is_binary_operator<value_t> );
+					daw::exception::daw_throw_on_false<daw::parser::ParserException>( lhs, "Could not find binary operator" );
+					return get_binary_operator<ForwardIterator>( first, last, *lhs.last );
+				}
 
 				struct function: public expression {
-					std::unique_ptr<label> name;	
-					std::unique_ptr<block> blk;
+					daw::optional_poly<label> name;
+					daw::optional_poly<block> blk;
 					virtual ~function( ) = default;
 				};	// function
 			}	// namespace ast	
 
 			template<typename T>
 				bool is_reserved( T value ) {
-					return is_a( value, '"', '+', '-', '*', '/', '%', '^', '#', '&', '~',
-							'|', '<', '>', '/', '=', '!', '=', '(', ')', '{', '}',
-							'[', ']', ':', ';', ',', '.', '\'' );
+					return is_binary_operator( value ) || is_a( value, '"', '#', '~',
+							'!', '(', ')', '{', '}', '[', ']', ':', ';', ',', '.', '\'' );
 				}
 
 			template<typename T>
@@ -128,18 +208,19 @@ namespace daw {
 				}
 
 			template<typename ForwardIterator>
-				daw::optional<ast::expression> parse_expression( ForwardIterator first, ForwardIterator const last ) {
+				daw::optional_poly<ast::expression> parse_expression( ForwardIterator first, ForwardIterator const last ) {
 					auto result = parse_binary_operand( first, last );
 					if( result ) {
 						return result;
 					}
 				}
 
-
 			template<typename ForwardIterator>
-				std::vector<ast::ast_item> parse( ForwardIterator first, ForwardIterator const last ) {
+			std::vector<ast::ast_item> parse( ForwardIterator first, ForwardIterator const last ) {
+				std::vector<ast::ast_item> result;
 
-				}
+				return result;
+			}
 		}	// namespace sheetrock
 	}    // namespace parser
 }    // namespace daw

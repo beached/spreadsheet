@@ -23,7 +23,6 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
-#include <unordered_map>
 #include <string>
 #include <utility>
 
@@ -133,10 +132,10 @@ namespace daw {
 		table_item::table_item_type table_item_type_from_string( boost::string_ref item_type ) {
 			using namespace std::literals::string_literals;
 			static auto const s_items = daw::create_hash_table<std::string, table_item::table_item_type>( {
-					{ "Table"s, table_item::table_item_type::Table },
 					{ "Cell"s, table_item::table_item_type::Cell },
+					{ "Column"s, table_item::table_item_type::Column },
 					{ "Row"s, table_item::table_item_type::Row },
-					{ "Column"s, table_item::table_item_type::Column }
+					{ "Table"s, table_item::table_item_type::Table }
 			} );
 			return s_items.at( item_type.to_string( ) );
 		}
