@@ -21,9 +21,10 @@ else( )
 	endif()
 endif()
 
-include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/cmake_deps/include" )
-link_directories( "${CMAKE_SOURCE_DIR}/cmake_deps/lib" )
-include_directories( "./include" )
+link_directories( "${CMAKE_SOURCE_DIR}/glean/lib" )
+include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/glean/include" )
+include_directories( "${CMAKE_SOURCE_DIR}/include" )
+include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 
 set( HEADER_FOLDER "include" )
 
@@ -42,8 +43,6 @@ set( SOURCE_FILES
 	spreadsheet.cpp
 	table_item.cpp
 )
-
-include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 
 add_library( spreadsheet STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 target_link_libraries( spreadsheet char_range parse_json nodepp ${Boost_LIBRARIES} )

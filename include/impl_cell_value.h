@@ -72,6 +72,7 @@ namespace daw {
 				eval_func_t m_evaluated;
 
 				eval_func_t eval( boost::string_ref cell_value );
+				
 			public:
 				cell_value( );
 
