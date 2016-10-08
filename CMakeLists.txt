@@ -2,8 +2,6 @@ cmake_minimum_required( VERSION 2.8.12 )
 
 project( spreadsheet_prj )
 
-include( ExternalProject )
-
 find_package( Boost 1.58.0 COMPONENTS system iostreams filesystem regex unit_test_framework REQUIRED )
 
 if( ${CMAKE_CXX_COMPILER_ID} STREQUAL 'MSVC' )
@@ -21,8 +19,8 @@ else( )
 	endif()
 endif()
 
-link_directories( "${CMAKE_SOURCE_DIR}/glean/lib" )
-include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/glean/include" )
+link_directories( "${CMAKE_SOURCE_DIR}/glean_files/lib" )
+include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/glean_files/include" )
 include_directories( "${CMAKE_SOURCE_DIR}/include" )
 include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 
